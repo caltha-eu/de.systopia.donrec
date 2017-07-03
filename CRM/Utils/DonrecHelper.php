@@ -15,13 +15,19 @@ class CRM_Utils_DonrecHelper
 {
   /**
   * @param number any number that should be converted to words
-  * @param lang language - currently only 'de' (German) is supported
+  * @param lang language - currently German (default) and Polish is supported
   * @author Karl Rixon (http://www.karlrixon.co.uk/writing/convert-numbers-to-words-with-php/)
   *         modified by Niko Bochan to support the German language
   */
   public static function convert_number_to_words($number, $lang='de', $recursion=false) {
+    if ($lang == 'pl_PL') {
+      // Install external package to support Polish language
+      // cd ./sites/all/modules/civicrm/packages/
+      // git clone https://bitbucket.org/stopsopa/kwotaslownie
+      require_once 'packages/kwotaslownie/Lib/Kwota.php';
+      return Kwota::getInstance()->slownie($number, null, false, null);
+    }
     // FIXME: @Niko bitte etwas mehr Doku im Code
-    if ($lang!='de') return false;
     $hyphen      = 'und';
     $conjunction = ' ';
     $separator   = ' ';
