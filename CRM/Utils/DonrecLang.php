@@ -15,7 +15,7 @@ class CRM_Utils_DonrecLang
 {
   static function &factory($lang, $params = array())
   {
-    $lang = ucwords(strtolower($lang), "_");
+    $lang = self::ucwords($lang);
     $class = 'CRM_Utils_Lang_' . $lang;
     if (class_exists($class)) {
       return new $class($params);
@@ -24,4 +24,21 @@ class CRM_Utils_DonrecLang
       return null;
     }
   }
+
+  /**
+   * Workaround for older version of PHP
+   *
+   * @param $lang
+   *
+   * @return string
+   */
+  private static function ucwords($lang) {
+    $delimiter = '_';
+    $tab = explode($delimiter, strtolower($lang));
+    foreach ($tab as $k => $t) {
+      $tab[$k] = ucwords($t);
+    }
+    return implode($delimiter, $tab);
+  }
+
 }
