@@ -132,6 +132,7 @@ class CRM_Donrec_Logic_SnapshotReceipt extends CRM_Donrec_Logic_ReceiptTokens {
     // add contributor and addressee
     $values['contributor'] = $this->getContributor($values['contact_id']);
     $values['addressee']   = $this->getAddressee($values['contact_id']);
+    $values['faktura'] = $this->getFaktura($snapshot_line['contribution_id']);
 
     // add dynamically created tokens
     CRM_Donrec_Logic_ReceiptTokens::addDynamicTokens($values);
@@ -207,6 +208,40 @@ class CRM_Donrec_Logic_SnapshotReceipt extends CRM_Donrec_Logic_ReceiptTokens {
     $this->cached_addressees[$contact_id] = $addressee;
 
     return $addressee;
+  }
+
+  /**
+   * @param $contributionId
+   *
+   * @return array
+   * @throws \CiviCRM_API3_Exception
+   */
+  private function getFaktura($contributionId) {
+    $param = [
+      'sequential' => 1,
+      'id' => $contributionId,
+      'return' => implode(',', [
+        CRM_Model_Fields_Faktura::nip(),
+        CRM_Model_Fields_Faktura::nazwaFirmy(),
+        CRM_Model_Fields_Faktura::ulica(),
+        CRM_Model_Fields_Faktura::kodPocztowy(),
+        CRM_Model_Fields_Faktura::miejscowosc(),
+        CRM_Model_Fields_Faktura::trescDoEmaila(),
+        CRM_Model_Fields_Faktura::pozycjaNaFakturze(),
+      ]),
+    ];
+    $result = civicrm_api3('Contribution', 'get', $param);
+    return [
+      'id' => $contributionId,
+      'data_wystawienia' => date('Y-m-d'),
+      'nip' => $result['values'][0][CRM_Model_Fields_Faktura::nip()],
+      'nazwa_firmy' => $result['values'][0][CRM_Model_Fields_Faktura::nazwaFirmy()],
+      'ulica' => $result['values'][0][CRM_Model_Fields_Faktura::ulica()],
+      'kod_pocztowy' => $result['values'][0][CRM_Model_Fields_Faktura::kodPocztowy()],
+      'miejscowosc' => $result['values'][0][CRM_Model_Fields_Faktura::miejscowosc()],
+      'tresc_do_emaila' => $result['values'][0][CRM_Model_Fields_Faktura::trescDoEmaila()],
+      'pozycja_na_fakturze' => $result['values'][0][CRM_Model_Fields_Faktura::pozycjaNaFakturze()],
+    ];
   }
 
   /**
