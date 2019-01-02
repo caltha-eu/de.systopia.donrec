@@ -221,6 +221,7 @@ class CRM_Donrec_Logic_SnapshotReceipt extends CRM_Donrec_Logic_ReceiptTokens {
       'sequential' => 1,
       'id' => $contributionId,
       'return' => implode(',', [
+        CRM_Model_Fields_Faktura::nrZamowienia(),
         CRM_Model_Fields_Faktura::nip(),
         CRM_Model_Fields_Faktura::nazwaFirmy(),
         CRM_Model_Fields_Faktura::ulica(),
@@ -231,9 +232,16 @@ class CRM_Donrec_Logic_SnapshotReceipt extends CRM_Donrec_Logic_ReceiptTokens {
       ]),
     ];
     $result = civicrm_api3('Contribution', 'get', $param);
+    $terminPlatnosci = new DateTime();
+    $terminPlatnosci->modify('+14 days');
+    if (in_array($terminPlatnosci->format('w'), [0, 6])) {
+      $terminPlatnosci->modify('Monday next week');
+    }
     return [
       'id' => $contributionId,
       'data_wystawienia' => date('Y-m-d'),
+      'termin_platnosci' => $terminPlatnosci->format('Y-m-d'),
+      'nr_zamowienia' => $result['values'][0][CRM_Model_Fields_Faktura::nrZamowienia()],
       'nip' => $result['values'][0][CRM_Model_Fields_Faktura::nip()],
       'nazwa_firmy' => $result['values'][0][CRM_Model_Fields_Faktura::nazwaFirmy()],
       'ulica' => $result['values'][0][CRM_Model_Fields_Faktura::ulica()],
